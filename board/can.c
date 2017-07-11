@@ -6,6 +6,7 @@
 #include "llgpio.h"
 #include "libc.h"
 #include "rev.h"
+#include "safety.h"
 
 int can_live = 0, pending_can_live = 0;
 
@@ -67,8 +68,6 @@ int can_live = 0, pending_can_live = 0;
     }
   };
 #endif
-
-int controls_allowed = 0;
 
 int pop(can_ring *q, CAN_FIFOMailBox_TypeDef *elem) {
   if (q->w_ptr != q->r_ptr) {
@@ -149,7 +148,7 @@ void can_init(uint8_t canid) {
   } else {
     for (i = 0; i < CAN_MAX; i++)
       if (can_ports[i].gmlan)
-	break;
+        break;
     if (i == CAN_MAX){
       set_gpio_output(GPIOB, 14, 0);
       set_gpio_output(GPIOB, 15, 0);
@@ -205,13 +204,11 @@ void can_init(uint8_t canid) {
     puts("  Type CAN\n");
 
   //////////////// Enable CAN port
-  if (controls_allowed)
+  if (is_output_enabled())
     puts("  Output Enabled\n");
   else
     puts("  Output Disabled\n");
 
-  //TODO: Eddie, check if disabling output causes correct behavior.
-  //set_can_enable(canid, controls_allowed);
   set_can_enable(canid, 1);
 
   CAN = port->CAN;
@@ -229,7 +226,7 @@ void can_init(uint8_t canid) {
     CAN->BTR |= CAN_BTR_SILM | CAN_BTR_LBKM;
   #endif
 
-  if (!controls_allowed) {
+  if (!is_output_enabled()) {
     CAN->BTR |= CAN_BTR_SILM;
   }
 
@@ -271,7 +268,7 @@ void set_can_mode(int canid, int use_gmlan) {
   if (use_gmlan)
     for (i = 0; i < CAN_MAX; i++)
       if (can_ports[i].gmlan)
-	set_can_mode(i, 0);
+        set_can_mode(i, 0);
 
   if (!can_ports[canid].gmlan_support) use_gmlan = 0;
   can_ports[canid].gmlan = use_gmlan;
@@ -320,9 +317,6 @@ void CAN2_SCE_IRQHandler() {
 void CAN3_SCE_IRQHandler() {
   can_sce(2);
 }
-
-//This function doens't have a good home yet. Suppress warning.
-void safety_rx_hook(CAN_FIFOMailBox_TypeDef *to_push);
 
 // CAN receive handlers
 // blink blue when we are receiving CAN messages
