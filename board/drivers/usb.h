@@ -76,8 +76,8 @@ uint8_t resp[MAX_RESP_LEN];
   (num&0xFF), ((num>>8)&0xFF)
 
 uint8_t device_desc[] = {
-  DSCR_DEVICE_LEN, DSCR_DEVICE_TYPE, 0x00, 0x01, //Length, Type, bcdUSB
-  0xFF, 0xFF, 0xFF, 0x40, // Class, Subclass, Protocol, Max Packet Size
+  DSCR_DEVICE_LEN, DSCR_DEVICE_TYPE, 0x01, 0x02, //Length, Type, bcdUSB
+  0x00, 0x00, 0x00, 0x40, // Class, Subclass, Protocol, Max Packet Size
   TOUSBORDER(USB_VID), // idVendor
   TOUSBORDER(USB_PID), // idProduct
 #ifdef STM32F4
@@ -164,6 +164,47 @@ uint16_t string_3_desc[] = {
   0x030a,
   'n', 'o', 'n', 'e'
 };
+
+#define WINUSB_VENDOR_CODE 0x21
+
+static uint8_t msftStringDescriptor[] = {
+  0x12,                                      /* bLength */
+  DSCR_STRING_TYPE,                          /* bDescriptorType */
+  'M',0,'S',0,'F',0,'T',0,'1',0,'0',0,'0',0, /* qWSignature - MSFT100 */
+  WINUSB_VENDOR_CODE,                        /* bMS_VendorCode */
+  0x00,                                      /* bPad */
+};
+
+static uint8_t msftCompatibleIdDescriptor[] = {
+  0x28, 0x00, 0x00, 0x00,         /* dwLength */
+  0x00, 0x01,                     /* bcdVersion */
+  0x04, 0x00,                     /* wIndex */
+  0x01,                           /* bCount */
+  0, 0, 0, 0, 0, 0, 0,            /* reserved */
+  0,                              /* bFirstInterfaceNumber */
+  0x00,                           /* reserved */
+  'W','I','N','U','S','B',0,0,    /* compatible ID - WINUSB */
+  0, 0, 0, 0, 0, 0, 0, 0,         /* subCompatibleID */
+  0, 0, 0, 0, 0, 0,               /* reserved */
+};
+
+static uint8_t msftExtendedPropertiesDescriptor[] = {
+  0x8c, 0x00, 0x00, 0x00,         /* dwLength */
+  0x00, 0x01,                     /* bcdVersion */
+  0x05, 0x00,                     /* wIndex */
+  0x01, 0x00,                     // Number of sections
+  0x82, 0x00, 0x00, 0x00,         // Size of property section
+  0x01, 0x00, 0x00, 0x00,         // Data type (1 = REG_SZ)
+  0x28, 0x00,                     // property name length (40)
+  'D',0,'e',0,'v',0,'i',0,'c',0,'e',0,'I',0,'n',0,'t',0,'e',0,'r',0,'f',0,'a',0,'c',0,'e',0,'G',0,'U',0,'I',0,'D',0,0,0,
+  0x4e, 0x00, 0x00, 0x00,         // property data length (78)
+  '{',0,'F',0,'3',0,'5',0,'E',0,'1',0,'B',0,'9',0,
+  'F',0,'-',0,'9',0,'E',0,'F',0,'1',0,'-',0,'4',0,
+  'D',0,'7',0,'1',0,'-',0,'9',0,'9',0,'D',0,'C',0,
+  '-',0,'B',0,'1',0,'C',0,'B',0,'C',0,'8',0,'0',0,
+  'E',0,'C',0,'1',0,'4',0,'3',0,'}',0,  0,0,
+};
+
 
 // current packet
 USB_Setup_TypeDef setup;
@@ -316,6 +357,8 @@ void usb_setup() {
           USBx_OUTEP(0)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK;
           break;
         case USB_DESC_TYPE_STRING:
+          puth(setup.b.wValue.w);
+          puts(" STRING DESC REQ\n");
           switch (setup.b.wValue.bw.msb) {
             case 0:
               USB_WritePacket((uint8_t*)string_0_desc, min(sizeof(string_0_desc), setup.b.wLength.w), 0);
@@ -345,6 +388,10 @@ void usb_setup() {
                 USB_WritePacket((const uint8_t *)string_3_desc, min(sizeof(string_3_desc), setup.b.wLength.w), 0);
               #endif
               break;
+            case 0xEE:
+              // because windows is a special snowflake
+              USB_WritePacket(msftStringDescriptor, min(sizeof(msftStringDescriptor), setup.b.wLength.w), 0);
+              break;
             default:
               // nothing
               USB_WritePacket(0, 0, 0);
@@ -358,6 +405,19 @@ void usb_setup() {
           USBx_OUTEP(0)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK;
           break;
       }
+      break;
+    case WINUSB_VENDOR_CODE:
+      puth(setup.b.wIndex.w);
+      puth(setup.b.wLength.w);
+      puts(" windows VENDOR desc\n");
+      if (setup.b.wIndex.w == 4) {
+        USB_WritePacket(msftCompatibleIdDescriptor, min(sizeof(msftCompatibleIdDescriptor), setup.b.wLength.w), 0);
+      } else if (setup.b.wIndex.w == 5) {
+        USB_WritePacket(msftExtendedPropertiesDescriptor, min(sizeof(msftExtendedPropertiesDescriptor), setup.b.wLength.w), 0);
+      } else {
+        USB_WritePacket(0, 0, 0);
+      }
+      USBx_OUTEP(0)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK;
       break;
     case USB_REQ_GET_STATUS:
       // empty resp?
