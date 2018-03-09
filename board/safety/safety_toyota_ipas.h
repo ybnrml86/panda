@@ -2,9 +2,14 @@
 static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   if (bus_num == 0) {
     if ((to_fwd->RIR>>21) == 0xb4) {
-      // only mask out the speed?
+      // cap the speed at 6kph (600)
+      int speed = ((to_fwd->RDHR) & 0xFF00) | ((to_fwd->RDHR >> 16) & 0xFF);
+      if (speed > 600) {
+        speed = 600;
+      }
+      int checksum = (0xb4 + 8 + speed) & 0xff;
       to_fwd->RDLR = 0;
-      to_fwd->RDHR = 0xbc000000;
+      to_fwd->RDHR = (checksum << 24) + ((speed & 0xFF) << 16) + (speed & 0xFF00);
     }
 
     return 2;
