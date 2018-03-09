@@ -2,8 +2,6 @@
 //#define CAN_LOOPBACK_MODE
 //#define USE_INTERNAL_OSC
 
-#define PEDAL
-
 #include "../config.h"
 
 #include "drivers/drivers.h"
@@ -32,14 +30,7 @@
 uint32_t enter_bootloader_mode;
 
 void __initialize_hardware_early() {
-  if (enter_bootloader_mode == ENTER_BOOTLOADER_MAGIC) {
-    enter_bootloader_mode = 0;
-    void (*bootloader)(void) = (void (*)(void)) (*((uint32_t *)0x1fff0004));
-    bootloader();
-
-    // LOOP
-    while(1);
-  }
+  early();
 }
 
 // ********************* serial debugging *********************
@@ -230,7 +221,7 @@ void pedal() {
   pdl1 = adc_get(ADCCHAN_ACCEL1);
 
   // write the pedal to the DAC
-  if (timeout < MAX_TIMEOUT && state == NO_FAULT) {
+  if (state == NO_FAULT) {
     dac_set(0, max(gas_set_0, pdl0));
     dac_set(1, max(gas_set_1, pdl1));
   } else {
