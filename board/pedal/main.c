@@ -112,6 +112,7 @@ uint32_t current_index = 0;
 #define FAULT_SCE 3
 #define FAULT_STARTUP 4
 #define FAULT_TIMEOUT 5
+#define FAULT_INVALID 6
 uint8_t state = FAULT_STARTUP;
 
 void CAN1_RX0_IRQHandler() {
@@ -121,6 +122,18 @@ void CAN1_RX0_IRQHandler() {
     #endif
     uint32_t address = CAN->sFIFOMailBox[0].RIR>>21;
     if (address == CAN_GAS_INPUT) {
+      // softloader entry
+      if (CAN->sFIFOMailBox[0].RDLR == 0xdeadface) {
+        if (CAN->sFIFOMailBox[0].RDHR == 0x0ab00b1e) {
+          enter_bootloader_mode = ENTER_SOFTLOADER_MAGIC;
+          NVIC_SystemReset();
+        } else if (CAN->sFIFOMailBox[0].RDHR == 0x02b00b1e) {
+          enter_bootloader_mode = ENTER_BOOTLOADER_MAGIC;
+          NVIC_SystemReset();
+        }
+      }
+
+      // normal packet
       uint8_t *dat = (uint8_t *)&CAN->sFIFOMailBox[0].RDLR;
       uint8_t *dat2 = (uint8_t *)&CAN->sFIFOMailBox[0].RDHR;
       uint16_t value_0 = (dat[0] << 8) | dat[1];
@@ -139,7 +152,11 @@ void CAN1_RX0_IRQHandler() {
             gas_set_1 = value_1;
           } else {
             // clear the fault state if values are 0
-            if (value_0 == 0 && value_1 == 0) state = NO_FAULT;
+            if (value_0 == 0 && value_1 == 0) {
+              state = NO_FAULT;
+            } else {
+              state = FAULT_INVALID;
+            }
             gas_set_0 = gas_set_1 = 0;
           }
           // clear the timeout
@@ -184,7 +201,7 @@ void TIM3_IRQHandler() {
     dat[2] = (pdl1>>8)&0xFF;
     dat[3] = (pdl1>>0)&0xFF;
     dat[4] = state;
-    dat[5] = can_cksum(dat, 5, CAN_GAS_OUTPUT, pkt_idx);
+    dat[5] = can_cksum(dat, 5, CAN_GAS_OUTPUT, pkt_idx) | (pkt_idx<<4);
     CAN->sTxMailBox[0].TDLR = dat[0] | (dat[1]<<8) | (dat[2]<<16) | (dat[3]<<24);
     CAN->sTxMailBox[0].TDHR = dat[4] | (dat[5]<<8);
     CAN->sTxMailBox[0].TDTR = 6;  // len of packet is 5
@@ -252,16 +269,10 @@ int main() {
 
   // init can
   can_silent = ALL_CAN_LIVE;
-  can_init_all();
+  can_init(0);
 
   // 48mhz / 65536 ~= 732
   timer_init(TIM3, 15);
-
-  // needed?
-  NVIC_EnableIRQ(CAN1_TX_IRQn);
-  NVIC_EnableIRQ(CAN1_RX0_IRQn);
-  NVIC_EnableIRQ(CAN1_SCE_IRQn);
-
   NVIC_EnableIRQ(TIM3_IRQn);
 
   // setup watchdog
