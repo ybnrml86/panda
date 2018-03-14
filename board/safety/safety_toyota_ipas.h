@@ -15,7 +15,7 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   if (bus_num == 0) {
     if ((to_fwd->RIR>>21) == 0x266) {
       angle_cmd_enable = ((to_fwd->RDLR & 0xff) >> 4) == 3;
-      if (!prev_angle_cmd_enable && angle_cmd_enable) {
+      /*if (!prev_angle_cmd_enable && angle_cmd_enable) {
         // send spoofed zero speed packet
         int speed = 0;
         int checksum = (0xb4 + 8 + speed + (speed >> 8)) & 0xff;
@@ -26,7 +26,7 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
         to_send.RDTR = 8;
         to_send.RIR = (0xb4 << 21) | 1;
         can_send(&to_send, 2);
-      } 
+      }*/
       prev_angle_cmd_enable = angle_cmd_enable;
     }
  
@@ -55,6 +55,7 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
 
     if ((to_fwd->RIR>>21) == 0x262) {
       ipas_rx_enable = (to_fwd->RDLR & 0xf) == 3;
+      controls_allowed = ipas_rx_enable;
     }
 
     return 0;
@@ -63,7 +64,7 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
 }
 
 const safety_hooks toyota_ipas_hooks = {
-  .init = alloutput_init,
+  .init = nooutput_init,
   .rx = default_rx_hook,
   .tx = alloutput_tx_hook,
   .tx_lin = nooutput_tx_lin_hook,
