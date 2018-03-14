@@ -10,7 +10,8 @@ const int speed_cancel = 6000;
 int angle_cmd_enable = 0;
 int prev_angle_cmd_enable = 0;
 
-// useful?
+// current state of the car
+int current_speed = 0;
 int ipas_rx_enable = 0;
 int steer_override = 0;
 
@@ -18,7 +19,7 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   if (bus_num == 0) {
     if ((to_fwd->RIR>>21) == 0x266) {
       angle_cmd_enable = ((to_fwd->RDLR & 0xff) >> 4) == 3;
-      /*if (!prev_angle_cmd_enable && angle_cmd_enable) {
+      /*if (!prev_angle_cmd_enable && angle_cmd_enable && current_speed < speed_cancel) {
         // send spoofed zero speed packet
         int speed = 0;
         int checksum = (0xb4 + 8 + speed + (speed >> 8)) & 0xff;
@@ -35,6 +36,7 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
  
     if ((to_fwd->RIR>>21) == 0xb4) {
       int speed = ((to_fwd->RDHR) & 0xff00) | ((to_fwd->RDHR >> 16) & 0xff);
+      current_speed = speed;
 
       if (speed > speed_max && speed < speed_cancel) {
         speed = speed_max;
