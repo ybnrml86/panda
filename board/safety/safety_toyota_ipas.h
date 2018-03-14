@@ -1,11 +1,12 @@
 // cap the speed at 10.25kph (1025). 1050 has been tested to be too high
 const int speed_max = 1025;
-const int counter_max = 50;
+const int counter_max = 80;
 
 int ipas_rx_enable = 0;
 int angle_cmd_enable = 0;
 int zero_speed_cnt = counter_max;   // 2s, since 0xb4 msg is updated at 40Hz
 int steer_override = 0;
+int prev_angle_cmd_enable = 0;
 
 static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   if (bus_num == 0) {
@@ -17,7 +18,7 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
 
       int speed = ((to_fwd->RDHR) & 0xff00) | ((to_fwd->RDHR >> 16) & 0xff);
 
-      if (angle_cmd_enable && (!ipas_rx_enable) && (!steer_override)) {
+      if (prev_angle_cmd_enable && (!angle_cmd_enable) && (!ipas_rx_enable) && (!steer_override) && (!zero_speed_lockout)) {
         zero_speed_cnt = 0;
       } else if (ipas_rx_enable) {
         zero_speed_cnt = counter_max;
@@ -34,6 +35,8 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
       int checksum = (0xb4 + 8 + speed + (speed >> 8)) & 0xff;
       to_fwd->RDLR = 0;
       to_fwd->RDHR = (checksum << 24) + ((speed & 0xff) << 16) + (speed & 0xff00);
+
+      prev_angle_cmd_enable = angle_cmd_enable;
     }
 
     return 2;
