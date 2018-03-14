@@ -1,33 +1,39 @@
+void can_send(CAN_FIFOMailBox_TypeDef *to_push, uint8_t bus_number);
+
 // cap the speed at 10.25kph (1025). 1050 has been tested to be too high
 const int speed_max = 1025;
-const int counter_max = 80;
 
-int ipas_rx_enable = 0;
+// entry state tracking
 int angle_cmd_enable = 0;
-int zero_speed_cnt = counter_max;   // 2s, since 0xb4 msg is updated at 40Hz
-int steer_override = 0;
 int prev_angle_cmd_enable = 0;
+
+// useful?
+int ipas_rx_enable = 0;
+int steer_override = 0;
 
 static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   if (bus_num == 0) {
     if ((to_fwd->RIR>>21) == 0x266) {
       angle_cmd_enable = ((to_fwd->RDLR & 0xff) >> 4) == 3;
+      if (!prev_angle_cmd_enable && angle_cmd_enable) {
+        // send spoofed zero speed packet
+        int speed = 0;
+        int checksum = (0xb4 + 8 + speed + (speed >> 8)) & 0xff;
+
+        CAN_FIFOMailBox_TypeDef to_send;
+        to_send.RDLR = 0;
+        to_send.RDHR = (checksum << 24) + ((speed & 0xff) << 16) + (speed & 0xff00);
+        to_send.RDTR = 8;
+        to_send.RIR = (0xb4 << 21) | 1;
+        can_send(&to_send, 2);
+      } 
+      prev_angle_cmd_enable = angle_cmd_enable;
     }
  
     if ((to_fwd->RIR>>21) == 0xb4) {
-
       int speed = ((to_fwd->RDHR) & 0xff00) | ((to_fwd->RDHR >> 16) & 0xff);
 
-      if (prev_angle_cmd_enable && (!angle_cmd_enable) && (!ipas_rx_enable) && (!steer_override) && (!zero_speed_lockout)) {
-        zero_speed_cnt = 0;
-      } else if (ipas_rx_enable) {
-        zero_speed_cnt = counter_max;
-      }
-
-      if (zero_speed_cnt < counter_max) {
-        speed = 0;
-        zero_speed_cnt += 1;
-      } else if (speed > speed_max) {
+      if (speed > speed_max) {
         speed = speed_max;
       }
 
@@ -35,8 +41,6 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
       int checksum = (0xb4 + 8 + speed + (speed >> 8)) & 0xff;
       to_fwd->RDLR = 0;
       to_fwd->RDHR = (checksum << 24) + ((speed & 0xff) << 16) + (speed & 0xff00);
-
-      prev_angle_cmd_enable = angle_cmd_enable;
     }
 
     return 2;

@@ -348,6 +348,7 @@ void can_rx(uint8_t can_number) {
 
     // forwarding (panda only)
     #ifdef PANDA
+      enter_critical_section();
       int bus_fwd_num = can_forwarding[bus_number] != -1 ? can_forwarding[bus_number] : safety_fwd_hook(bus_number, &to_push);
       if (bus_fwd_num != -1) {
         CAN_FIFOMailBox_TypeDef to_send;
@@ -357,6 +358,7 @@ void can_rx(uint8_t can_number) {
         to_send.RDHR = to_push.RDHR;
         can_send(&to_send, bus_fwd_num);
       }
+      exit_critical_section();
     #endif
 
     // modify RDTR for our API
