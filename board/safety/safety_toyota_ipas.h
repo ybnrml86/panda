@@ -3,8 +3,8 @@ void can_send(CAN_FIFOMailBox_TypeDef *to_push, uint8_t bus_number);
 // cap the speed at 10.25kph (1025). 1050 has been tested to be too high
 const int speed_max = 1025;
 
-// above 60 kph (37.2 mph), send the real speed
-const int speed_cancel = 6000;
+// above 70 kph (45 mph), send the real speed
+const int speed_cancel = 7000;
 
 // entry state tracking
 int angle_cmd_enable = 0;
@@ -17,9 +17,11 @@ int steer_override = 0;
 
 static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   if (bus_num == 0) {
-    if ((to_fwd->RIR>>21) == 0x266) {
+    if ((to_fwd->RIR>>21) == 0x267) {
+      // change address
+      to_fwd->RIR = (to_fwd->RIR & 0x1fffff) | (0x267 << 21);
       angle_cmd_enable = ((to_fwd->RDLR & 0xff) >> 4) == 3;
-      /*if (!prev_angle_cmd_enable && angle_cmd_enable && current_speed < speed_cancel) {
+      if (!prev_angle_cmd_enable && angle_cmd_enable && current_speed < speed_cancel) {
         // send spoofed zero speed packet
         int speed = 0;
         int checksum = (0xb4 + 8 + speed + (speed >> 8)) & 0xff;
@@ -30,10 +32,15 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
         to_send.RDTR = 8;
         to_send.RIR = (0xb4 << 21) | 1;
         can_send(&to_send, 2);
-      }*/
+      }
       prev_angle_cmd_enable = angle_cmd_enable;
+      return 2;
     }
  
+    if ((to_fwd->RIR>>21) == 0x266) {
+      return -1;
+    }
+
     if ((to_fwd->RIR>>21) == 0xb4) {
       int speed = ((to_fwd->RDHR) & 0xff00) | ((to_fwd->RDHR >> 16) & 0xff);
       current_speed = speed;
