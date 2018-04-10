@@ -17,9 +17,15 @@ int steer_override = 0;
 
 static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   if (bus_num == 0) {
+
+    // block 0x266 from IPAS
+    if ((to_fwd->RIR>>21) == 0x266) {
+      return -1;
+    }
+
     if ((to_fwd->RIR>>21) == 0x267) {
       // change address
-      to_fwd->RIR = (to_fwd->RIR & 0x1fffff) | (0x267 << 21);
+      to_fwd->RIR = (to_fwd->RIR & 0x1fffff) | (0x266 << 21);
       angle_cmd_enable = ((to_fwd->RDLR & 0xff) >> 4) == 3;
       if (!prev_angle_cmd_enable && angle_cmd_enable && current_speed < speed_cancel) {
         // send spoofed zero speed packet
@@ -37,10 +43,6 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
       return 2;
     }
  
-    if ((to_fwd->RIR>>21) == 0x266) {
-      return -1;
-    }
-
     if ((to_fwd->RIR>>21) == 0xb4) {
       int speed = ((to_fwd->RDHR) & 0xff00) | ((to_fwd->RDHR >> 16) & 0xff);
       current_speed = speed;
@@ -59,6 +61,7 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   }
 
   if (bus_num == 2) {
+
     if ((to_fwd->RIR>>21) == 0x260) {
       const int torque_override_thrs = 100;
       int16_t torque_driver = (((to_fwd->RDLR) & 0xFF00) | ((to_fwd->RDLR >> 16) & 0xFF));
