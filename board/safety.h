@@ -67,6 +67,7 @@ const safety_hook_config safety_hook_registry[] = {
   {SAFETY_HONDA_BOSCH, &honda_bosch_hooks},
   {SAFETY_TOYOTA, &toyota_hooks},
   {SAFETY_TOYOTA_NOLIMITS, &toyota_nolimits_hooks},
+  {SAFETY_TOYOTA_J70, &toyota_j70_hooks},
   {SAFETY_TOYOTA_IPAS, &toyota_ipas_hooks},
   {SAFETY_GM, &gm_hooks},
   {SAFETY_ALLOUTPUT, &alloutput_hooks},

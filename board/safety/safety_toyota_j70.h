@@ -15,7 +15,7 @@ int current_speed = 0;
 int ipas_rx_enable = 0;
 int steer_override = 0;
 
-static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
+static int toyota_j70_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   if (bus_num == 0) {
 
     // block 0x266 from IPAS
@@ -78,11 +78,11 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   return -1;
 }
 
-const safety_hooks toyota_ipas_hooks = {
+const safety_hooks toyota_j70_hooks = {
   .init = nooutput_init,
   .rx = default_rx_hook,
   .tx = alloutput_tx_hook,
   .tx_lin = nooutput_tx_lin_hook,
-  .fwd = toyota_ipas_fwd_hook,
+  .fwd = toyota_j70_fwd_hook,
 };
 
