@@ -24,6 +24,7 @@ int controls_allowed = 0;
 #include "safety/safety_honda.h"
 #include "safety/safety_toyota.h"
 #include "safety/safety_toyota_ipas.h"
+#include "safety/safety_toyota_j70.h"
 #include "safety/safety_gm.h"
 #include "safety/safety_elm327.h"
 
