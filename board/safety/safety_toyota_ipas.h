@@ -23,7 +23,7 @@ static int toyota_ipas_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
       return -1;
     }
 
-    if ((to_fwd->RIR>>21) == 0x267) {
+    if ((to_fwd->RIR>>21) == 0x167) {
       // change address
       to_fwd->RIR = (to_fwd->RIR & 0x1fffff) | (0x266 << 21);
       angle_cmd_enable = ((to_fwd->RDLR & 0xff) >> 4) == 3;
