@@ -29,7 +29,7 @@ int controls_allowed = 0;
 #ifdef PANDA
 #include "safety/safety_toyota_ipas.h"
 #endif
-#include "safety/safety_toyota_j70.h"
+#include "safety/safety_toyota_f70.h"
 #include "safety/safety_gm.h"
 #include "safety/safety_elm327.h"
 
@@ -65,7 +65,7 @@ typedef struct {
 #define SAFETY_NOOUTPUT 0
 #define SAFETY_HONDA 1
 #define SAFETY_TOYOTA 2
-#define SAFETY_TOYOTA_J70 0x1334
+#define SAFETY_TOYOTA_F70 0x1334
 #define SAFETY_TOYOTA_IPAS 0x1335
 #define SAFETY_TOYOTA_NOLIMITS 0x1336
 #define SAFETY_GM 3
@@ -82,7 +82,7 @@ const safety_hook_config safety_hook_registry[] = {
 #ifdef PANDA
   {SAFETY_TOYOTA_IPAS, &toyota_ipas_hooks},
 #endif
-  {SAFETY_TOYOTA_J70, &toyota_j70_hooks},
+  {SAFETY_TOYOTA_f70, &toyota_f70_hooks},
   {SAFETY_GM, &gm_hooks},
   {SAFETY_ALLOUTPUT, &alloutput_hooks},
   {SAFETY_ELM327, &elm327_hooks},
