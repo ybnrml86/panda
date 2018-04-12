@@ -1,15 +1,18 @@
 void safety_rx_hook(CAN_FIFOMailBox_TypeDef *to_push);
 int safety_tx_hook(CAN_FIFOMailBox_TypeDef *to_send);
 int safety_tx_lin_hook(int lin_num, uint8_t *data, int len);
+int safety_ignition_hook();
 
 typedef void (*safety_hook_init)(int16_t param);
 typedef void (*rx_hook)(CAN_FIFOMailBox_TypeDef *to_push);
 typedef int (*tx_hook)(CAN_FIFOMailBox_TypeDef *to_send);
 typedef int (*tx_lin_hook)(int lin_num, uint8_t *data, int len);
+typedef int (*ign_hook)();
 typedef int (*fwd_hook)(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd);
 
 typedef struct {
   safety_hook_init init;
+  ign_hook ignition;
   rx_hook rx;
   tx_hook tx;
   tx_lin_hook tx_lin;
@@ -23,7 +26,9 @@ int controls_allowed = 0;
 #include "safety/safety_defaults.h"
 #include "safety/safety_honda.h"
 #include "safety/safety_toyota.h"
+#ifdef PANDA
 #include "safety/safety_toyota_ipas.h"
+#endif
 #include "safety/safety_toyota_j70.h"
 #include "safety/safety_gm.h"
 #include "safety/safety_elm327.h"
@@ -42,6 +47,12 @@ int safety_tx_lin_hook(int lin_num, uint8_t *data, int len){
   return current_hooks->tx_lin(lin_num, data, len);
 }
 
+// -1 = Disabled (Use GPIO to determine ignition)
+// 0 = Off (not started)
+// 1 = On (started)
+int safety_ignition_hook() {
+  return current_hooks->ignition();
+}
 int safety_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   return current_hooks->fwd(bus_num, to_fwd);
 }
@@ -68,8 +79,10 @@ const safety_hook_config safety_hook_registry[] = {
   {SAFETY_HONDA_BOSCH, &honda_bosch_hooks},
   {SAFETY_TOYOTA, &toyota_hooks},
   {SAFETY_TOYOTA_NOLIMITS, &toyota_nolimits_hooks},
-  {SAFETY_TOYOTA_J70, &toyota_j70_hooks},
+#ifdef PANDA
   {SAFETY_TOYOTA_IPAS, &toyota_ipas_hooks},
+#endif
+  {SAFETY_TOYOTA_J70, &toyota_j70_hooks},
   {SAFETY_GM, &gm_hooks},
   {SAFETY_ALLOUTPUT, &alloutput_hooks},
   {SAFETY_ELM327, &elm327_hooks},

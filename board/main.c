@@ -104,7 +104,14 @@ int get_health_pkt(void *dat) {
 
 #ifdef PANDA
   health->current = adc_get(ADCCHAN_CURRENT);
-  health->started = (GPIOA->IDR & (1 << 1)) == 0;
+  int safety_ignition = safety_ignition_hook();
+  if (safety_ignition < 0) {
+    //Use the GPIO pin to determine ignition
+    health->started = (GPIOA->IDR & (1 << 1)) == 0;
+  } else {
+    //Current safety hooks want to determine ignition (ex: GM)
+    health-> started = safety_ignition;
+  }
 #else
   health->current = 0;
   health->started = (GPIOC->IDR & (1 << 13)) != 0;
@@ -483,6 +490,11 @@ void __initialize_hardware_early() {
   early();
 }
 
+void __attribute__ ((noinline)) enable_fpu() {
+  // enable the FPU
+  SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2));
+}
+
 int main() {
   // shouldn't have interrupts here, but just in case
   __disable_irq();
@@ -507,6 +519,11 @@ int main() {
   puts(is_grey_panda ? "  gray panda detected!\n" : "  white panda\n");
   puts(is_entering_bootmode ? "  ESP wants bootmode\n" : "  no bootmode\n");
   gpio_init();
+
+#ifdef PANDA
+  // panda has an FPU, let's use it!
+  enable_fpu();
+#endif
 
   // enable main uart if it's connected
   if (has_external_debug_serial) {

@@ -64,7 +64,7 @@ static void toyota_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     update_sample(&torque_meas, torque_meas_new);
   }
 
-  // exit controls on ACC off
+  // enter controls on rising edge of ACC, exit controls on ACC off
   if ((to_push->RIR>>21) == 0x1D2) {
     // 4 bits: 55-52
     int cruise_engaged = to_push->RDHR & 0xF00000;
@@ -83,8 +83,7 @@ static int toyota_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   if (((to_send->RDTR >> 4) & 0xF) == 0) {
 
     // no IPAS in non IPAS mode
-    if ((to_send->RIR>>21) == 0x266) return false;
-    if ((to_send->RIR>>21) == 0x167) return false;
+    if (((to_send->RIR>>21) == 0x266) || ((to_send->RIR>>21) == 0x167)) return false;
 
     // ACCEL: safety check on byte 1-2
     if ((to_send->RIR>>21) == 0x343) {
@@ -180,6 +179,10 @@ static void toyota_init(int16_t param) {
   dbc_eps_torque_factor = param;
 }
 
+static int toyota_ign_hook() {
+  return -1;
+}
+
 static int toyota_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   return -1;
 }
@@ -189,6 +192,7 @@ const safety_hooks toyota_hooks = {
   .rx = toyota_rx_hook,
   .tx = toyota_tx_hook,
   .tx_lin = toyota_tx_lin_hook,
+  .ignition = toyota_ign_hook,
   .fwd = toyota_fwd_hook,
 };
 
@@ -203,5 +207,6 @@ const safety_hooks toyota_nolimits_hooks = {
   .rx = toyota_rx_hook,
   .tx = toyota_tx_hook,
   .tx_lin = toyota_tx_lin_hook,
+  .ignition = toyota_ign_hook,
   .fwd = toyota_fwd_hook,
 };
