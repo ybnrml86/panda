@@ -378,9 +378,14 @@ void gpio_init() {
   1        1        33kbit (normal)
   */
 
-  // put gmlan transceiver in normal mode
-  set_gpio_output(GPIOB, 14, 1);
-  set_gpio_output(GPIOB, 15, 1);
+  if (is_c3) {
+    // power on the tx2
+    set_gpio_output(GPIOB, 15, 0);
+  } else {
+    // put gmlan transceiver in normal mode
+    set_gpio_output(GPIOB, 14, 1);
+    set_gpio_output(GPIOB, 15, 1);
+  }
 
   #ifdef PANDA
     // K-line enable moved from B4->B7 to make room for GMLAN on CAN3
