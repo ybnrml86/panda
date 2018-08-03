@@ -16,6 +16,7 @@ int is_giant_panda = 0;
 int is_entering_bootmode = 0;
 int revision = PANDA_REV_AB;
 int is_grey_panda = 0;
+int is_c3 = 0;
 
 int detect_with_pull(GPIO_TypeDef *GPIO, int pin, int mode) {
   set_gpio_mode(GPIO, pin, MODE_INPUT);
@@ -28,6 +29,14 @@ int detect_with_pull(GPIO_TypeDef *GPIO, int pin, int mode) {
 
 // must call again from main because BSS is zeroed
 void detect() {
+  // TODO: find a way to detect c3
+  //is_c3 = detect_with_pull(GPIOC, 0, PULL_DOWN);
+  is_c3 = 1;
+  if (is_c3) {
+    revision = PANDA_REV_C;
+    return;
+  }
+
   // detect has_external_debug_serial
   has_external_debug_serial = detect_with_pull(GPIOA, 3, PULL_DOWN);
 

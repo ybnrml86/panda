@@ -510,15 +510,19 @@ int main() {
 
   // detect the revision and init the GPIOs
   puts("config:\n");
-  #ifdef PANDA
-    puts(revision == PANDA_REV_C ? "  panda rev c\n" : "  panda rev a or b\n");
-  #else
-    puts("  legacy\n");
-  #endif
-  puts(has_external_debug_serial ? "  real serial\n" : "  USB serial\n");
-  puts(is_giant_panda ? "  GIANTpanda detected\n" : "  not GIANTpanda\n");
-  puts(is_grey_panda ? "  gray panda detected!\n" : "  white panda\n");
-  puts(is_entering_bootmode ? "  ESP wants bootmode\n" : "  no bootmode\n");
+  if (is_c3) {
+    puts("  c3 detected\n");
+  } else {
+    #ifdef PANDA
+      puts(revision == PANDA_REV_C ? "  panda rev c\n" : "  panda rev a or b\n");
+    #else
+      puts("  legacy\n");
+    #endif
+    puts(has_external_debug_serial ? "  real serial\n" : "  USB serial\n");
+    puts(is_giant_panda ? "  GIANTpanda detected\n" : "  not GIANTpanda\n");
+    puts(is_grey_panda ? "  gray panda detected!\n" : "  white panda\n");
+    puts(is_entering_bootmode ? "  ESP wants bootmode\n" : "  no bootmode\n");
+  }
   gpio_init();
 
 #ifdef PANDA
@@ -579,8 +583,9 @@ int main() {
 
   // if the error interrupt is enabled to quickly when the CAN bus is active
   // something bad happens and you can't connect to the device over USB
-  delay(10000000);
-  CAN1->IER |= CAN_IER_ERRIE | CAN_IER_LECIE;
+  // TODO: I don't understand this
+  /*delay(10000000);
+  CAN1->IER |= CAN_IER_ERRIE | CAN_IER_LECIE;*/
 
   // LED should keep on blinking all the time
   uint64_t cnt = 0;
@@ -662,7 +667,7 @@ int main() {
     #endif
 
     // set green LED to be controls allowed
-    set_led(LED_GREEN, controls_allowed);
+    if (!is_c3) set_led(LED_GREEN, controls_allowed);
 
     // blink the red LED
     int div_mode = ((usb_power_mode == USB_POWER_DCP) ? 4 : 1);
@@ -670,9 +675,9 @@ int main() {
     for (int div_mode_loop = 0; div_mode_loop < div_mode; div_mode_loop++) {
       for (int fade = 0; fade < 1024; fade += 8) {
         for (int i = 0; i < 128/div_mode; i++) {
-          set_led(LED_RED, 0);
+          set_led(is_c3 ? LED_GREEN : LED_RED, 0);
           if (fade < 512) { delay(512-fade); } else { delay(fade-512); }
-          set_led(LED_RED, 1);
+          set_led(is_c3 ? LED_GREEN : LED_RED, 1);
           if (fade < 512) { delay(fade); } else { delay(1024-fade); }
         }
       }
