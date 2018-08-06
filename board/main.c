@@ -512,7 +512,6 @@ int main() {
   puts("config:\n");
   if (is_c3) {
     puts("  c3 detected\n");
-    has_external_debug_serial = 1;
   } else {
     #ifdef PANDA
       puts(revision == PANDA_REV_C ? "  panda rev c\n" : "  panda rev a or b\n");
@@ -532,7 +531,7 @@ int main() {
 #endif
 
   // enable main uart if it's connected
-  if (has_external_debug_serial) {
+  if (has_external_debug_serial || is_c3) {
     // WEIRDNESS: without this gate around the UART, it would "crash", but only if the ESP is enabled
     // assuming it's because the lines were left floating and spurious noise was on them
     uart_init(USART2, 115200);

@@ -34,6 +34,10 @@ void detect() {
   is_c3 = 1;
   if (is_c3) {
     revision = PANDA_REV_C;
+    has_external_debug_serial = 0;
+    is_giant_panda = 0;
+    is_grey_panda = 0;
+    is_entering_bootmode = 0;
     return;
   }
 
@@ -393,7 +397,7 @@ void gpio_init() {
   */
 
   if (is_c3) {
-    // power on the tx2
+    // tx2 not in reset
     set_gpio_output(GPIOB, 15, 0);
   } else {
     // put gmlan transceiver in normal mode

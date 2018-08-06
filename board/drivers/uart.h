@@ -19,12 +19,18 @@ uart_ring lin2_ring = { .w_ptr_tx = 0, .r_ptr_tx = 0,
                         .uart = USART3,
                         .callback = NULL};
 
-// debug = USART2
+// debug = fake USART
 void debug_ring_callback(uart_ring *ring);
 uart_ring debug_ring = { .w_ptr_tx = 0, .r_ptr_tx = 0,
                          .w_ptr_rx = 0, .r_ptr_rx = 0,
-                         .uart = USART2,
-                         .callback = NULL}; //debug_ring_callback};
+                         .uart = NULL,
+                         .callback = debug_ring_callback};
+
+// debug = USART2
+uart_ring usart2_ring = { .w_ptr_tx = 0, .r_ptr_tx = 0,
+                          .w_ptr_rx = 0, .r_ptr_rx = 0,
+                          .uart = USART2,
+                          .callback = NULL};
 
 
 uart_ring *get_ring_by_number(int a) {
@@ -37,6 +43,8 @@ uart_ring *get_ring_by_number(int a) {
       return &lin1_ring;
     case 3:
       return &lin2_ring;
+    case 4:
+      return &usart2_ring;
     default:
       return NULL;
   }
@@ -84,7 +92,7 @@ void uart_ring_process(uart_ring *q) {
 // interrupt boilerplate
 
 void USART1_IRQHandler(void) { uart_ring_process(&esp_ring); }
-void USART2_IRQHandler(void) { uart_ring_process(&debug_ring); }
+void USART2_IRQHandler(void) { uart_ring_process(&usart2_ring); }
 void USART3_IRQHandler(void) { uart_ring_process(&lin2_ring); }
 void UART5_IRQHandler(void) { uart_ring_process(&lin1_ring); }
 
