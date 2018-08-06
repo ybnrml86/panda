@@ -512,6 +512,7 @@ int main() {
   puts("config:\n");
   if (is_c3) {
     puts("  c3 detected\n");
+    has_external_debug_serial = 1;
   } else {
     #ifdef PANDA
       puts(revision == PANDA_REV_C ? "  panda rev c\n" : "  panda rev a or b\n");

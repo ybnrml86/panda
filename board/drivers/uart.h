@@ -24,7 +24,7 @@ void debug_ring_callback(uart_ring *ring);
 uart_ring debug_ring = { .w_ptr_tx = 0, .r_ptr_tx = 0,
                          .w_ptr_rx = 0, .r_ptr_rx = 0,
                          .uart = USART2,
-                         .callback = debug_ring_callback};
+                         .callback = NULL}; //debug_ring_callback};
 
 
 uart_ring *get_ring_by_number(int a) {
