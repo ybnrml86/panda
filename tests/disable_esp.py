@@ -10,7 +10,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "on":
 elif len(sys.argv) > 1 and sys.argv[1] == "reset":
   p.set_esp_power(False)
   print "power off"
-  time.sleep(0.5)
+  time.sleep(0.1)
   p.set_esp_power(True)
   print "power on"
 else:

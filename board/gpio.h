@@ -274,10 +274,12 @@ void set_esp_mode(int mode) {
   if (is_c3) {
     switch (mode) {
       case ESP_DISABLED:
+        puts("tx2 poweroff\n");
         set_gpio_output(GPIOB, 15, 1);
         break;
       case ESP_BOOTMODE:
       case ESP_ENABLED:
+        puts("tx2 poweron\n");
         set_gpio_output(GPIOB, 15, 0);
         break;
     }
