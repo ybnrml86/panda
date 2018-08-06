@@ -271,21 +271,33 @@ void set_usb_power_mode(int mode) {
 #define ESP_BOOTMODE 2
 
 void set_esp_mode(int mode) {
-  switch (mode) {
-    case ESP_DISABLED:
-      // ESP OFF
-      set_gpio_output(GPIOC, 14, 0);
-      set_gpio_output(GPIOC, 5, 0);
-      break;
-    case ESP_ENABLED:
-      // ESP ON
-      set_gpio_output(GPIOC, 14, 1);
-      set_gpio_output(GPIOC, 5, 1);
-      break;
-    case ESP_BOOTMODE:
-      set_gpio_output(GPIOC, 14, 1);
-      set_gpio_output(GPIOC, 5, 0);
-      break;
+  if (is_c3) {
+    switch (mode) {
+      case ESP_DISABLED:
+        set_gpio_output(GPIOB, 15, 1);
+        break;
+      case ESP_BOOTMODE:
+      case ESP_ENABLED:
+        set_gpio_output(GPIOB, 15, 0);
+        break;
+    }
+  } else {
+    switch (mode) {
+      case ESP_DISABLED:
+        // ESP OFF
+        set_gpio_output(GPIOC, 14, 0);
+        set_gpio_output(GPIOC, 5, 0);
+        break;
+      case ESP_ENABLED:
+        // ESP ON
+        set_gpio_output(GPIOC, 14, 1);
+        set_gpio_output(GPIOC, 5, 1);
+        break;
+      case ESP_BOOTMODE:
+        set_gpio_output(GPIOC, 14, 1);
+        set_gpio_output(GPIOC, 5, 0);
+        break;
+    }
   }
 }
 
