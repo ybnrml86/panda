@@ -3,7 +3,7 @@ import sys
 import time
 from panda import Panda
 
-p = Panda()
+p = Panda(claim=False)
 
 if len(sys.argv) > 1 and sys.argv[1] == "on":
   p.set_esp_power(True)
