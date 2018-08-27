@@ -406,25 +406,30 @@ void gpio_init() {
   }
 
   #ifdef PANDA
-    // K-line enable moved from B4->B7 to make room for GMLAN on CAN3
-    if (revision == PANDA_REV_C) {
-      set_gpio_output(GPIOB, 7, 1); // REV C
+    if (is_c3) {
+      // this is the USB switch, 0 keeps the panda on USB
+      set_gpio_output(GPIOB, 7, 0);
     } else {
-      set_gpio_output(GPIOB, 4, 1); // REV AB
+      // K-line enable moved from B4->B7 to make room for GMLAN on CAN3
+      if (revision == PANDA_REV_C) {
+        set_gpio_output(GPIOB, 7, 1); // REV C
+      } else {
+        set_gpio_output(GPIOB, 4, 1); // REV AB
+      }
+
+      // C12,D2: K-Line setup on UART 5
+      set_gpio_alternate(GPIOC, 12, GPIO_AF8_UART5);
+      set_gpio_alternate(GPIOD, 2, GPIO_AF8_UART5);
+      set_gpio_pullup(GPIOD, 2, PULL_UP);
+
+      // L-line enable
+      set_gpio_output(GPIOA, 14, 1);
+
+      // C10,C11: L-Line setup on USART 3
+      set_gpio_alternate(GPIOC, 10, GPIO_AF7_USART3);
+      set_gpio_alternate(GPIOC, 11, GPIO_AF7_USART3);
+      set_gpio_pullup(GPIOC, 11, PULL_UP);
     }
-
-    // C12,D2: K-Line setup on UART 5
-    set_gpio_alternate(GPIOC, 12, GPIO_AF8_UART5);
-    set_gpio_alternate(GPIOD, 2, GPIO_AF8_UART5);
-    set_gpio_pullup(GPIOD, 2, PULL_UP);
-
-    // L-line enable
-    set_gpio_output(GPIOA, 14, 1);
-
-    // C10,C11: L-Line setup on USART 3
-    set_gpio_alternate(GPIOC, 10, GPIO_AF7_USART3);
-    set_gpio_alternate(GPIOC, 11, GPIO_AF7_USART3);
-    set_gpio_pullup(GPIOC, 11, PULL_UP);
   #endif
 
   if (revision == PANDA_REV_C) {
