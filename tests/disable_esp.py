@@ -13,6 +13,12 @@ elif len(sys.argv) > 1 and sys.argv[1] == "reset":
   time.sleep(0.1)
   p.set_esp_power(True)
   print "power on"
+elif len(sys.argv) > 1 and sys.argv[1] == "boot":
+  p.set_esp_power(False)
+  print "power off"
+  time.sleep(0.1)
+  p.set_esp_power(2)
+  print "boot on"
 else:
   p.set_esp_power(False)
 

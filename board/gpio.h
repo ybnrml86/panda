@@ -276,15 +276,21 @@ void set_usb_power_mode(int mode) {
 
 void set_esp_mode(int mode) {
   if (is_c3) {
+    // sadly, polarity is inverted
     switch (mode) {
       case ESP_DISABLED:
-        puts("tx2 poweroff\n");
-        set_gpio_output(GPIOB, 15, 1);
+        // ESP OFF
+        set_gpio_output(GPIOC, 14, 1);
+        set_gpio_output(GPIOC, 5, 1);
+        break;
+      case ESP_ENABLED:
+        // ESP ON
+        set_gpio_output(GPIOC, 14, 0);
+        set_gpio_output(GPIOC, 5, 0);
         break;
       case ESP_BOOTMODE:
-      case ESP_ENABLED:
-        puts("tx2 poweron\n");
-        set_gpio_output(GPIOB, 15, 0);
+        set_gpio_output(GPIOC, 14, 0);
+        set_gpio_output(GPIOC, 5, 1);
         break;
     }
   } else {
