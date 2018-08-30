@@ -17,6 +17,9 @@ while 1:
 import panda
 
 p = panda.Panda("SPI")
-#print p.get_version()
-p.reset()
+while 1:
+  #print p.get_version()
+  p.serial_write(0, "test")
+  time.sleep(0.01)
+#p.reset()
 

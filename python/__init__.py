@@ -99,15 +99,17 @@ class WifiHandle(object):
   def close(self):
     self.sock.close()
 
+from hexdump import hexdump
 class SPIHandle(object):
   def __init__(self):
     import spidev
     self.spi = spidev.SpiDev()
     self.spi.open(0,0)
-    self.spi.max_speed_hz = 500000
+    self.spi.max_speed_hz = 5000000
 
   def __recv(self):
-    ret = ''.join(map(chr, self.spi.readbytes(0x44)))
+    ret = ''.join(map(chr, self.spi.xfer([0]*0x44)))
+    hexdump(ret)
     length = struct.unpack("I", ret[0:4])[0]
     return ret[4:4+length]
 
@@ -118,17 +120,20 @@ class SPIHandle(object):
   def controlRead(self, request_type, request, value, index, length, timeout=0):
     to_send = struct.pack("HHBBHHH", 0, 0, request_type, request, value, index, length)
     ret = self.spi.writebytes(map(ord, to_send))
-    return self.__recv()
+    #return self.__recv()
 
   def bulkWrite(self, endpoint, data, timeout=0):
     if len(data) > 0x10:
       raise ValueError("Data must not be longer than 0x10")
-    self.sock.send(struct.pack("HH", endpoint, len(data))+data)
-    self.__recv()  # to /dev/null
+    to_send = struct.pack("HH", endpoint, len(data))+data
+    #self.__recv()  # to /dev/null
+    self.spi.writebytes(map(ord, to_send))
+    return len(to_send)
 
   def bulkRead(self, endpoint, length, timeout=0):
-    self.sock.send(struct.pack("HH", endpoint, 0))
-    return self.__recv()
+    to_send = struct.pack("HH", endpoint, 0)
+    self.spi.writebytes(map(ord, to_send))
+    #return self.__recv()
 
   def close(self):
     self.spi.close()
