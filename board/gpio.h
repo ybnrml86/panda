@@ -448,6 +448,9 @@ void gpio_init() {
     // B13, B14, termination on
     set_gpio_output(GPIOB, 13, 1);
     set_gpio_output(GPIOB, 14, 1);
+
+    // enable TX2 CAN
+    set_gpio_output(GPIOA, 0, 0);
   }
 }
 
