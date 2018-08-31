@@ -195,6 +195,7 @@ void can_set_speed(uint8_t can_number) {
 
 void can_init(uint8_t can_number) {
   if (can_number == 0xff) return;
+  if (is_c3 && can_number == 2) return;
 
   CAN_TypeDef *CAN = CANIF_FROM_CAN_NUM(can_number);
   set_can_enable(CAN, 1);
