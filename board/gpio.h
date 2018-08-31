@@ -445,9 +445,10 @@ void gpio_init() {
   }
 
   if (is_c3) {
-    // B13, B14, termination on
-    set_gpio_output(GPIOB, 13, 1);
-    set_gpio_output(GPIOB, 14, 1);
+    // B13, B14, termination off
+    // (note: if you turn them on, it crashes panda on TX2 reset)
+    set_gpio_output(GPIOB, 13, 0);
+    set_gpio_output(GPIOB, 14, 0);
 
     // enable TX2 CAN
     set_gpio_output(GPIOA, 0, 0);
