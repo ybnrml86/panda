@@ -685,7 +685,7 @@ int main() {
     #endif
 
     // set green LED to be controls allowed
-    if (!is_c3) set_led(LED_GREEN, controls_allowed);
+    set_led(is_c3 ? LED_RED : LED_GREEN, controls_allowed);
 
     // blink the red LED
     int div_mode = ((usb_power_mode == USB_POWER_DCP) ? 4 : 1);
