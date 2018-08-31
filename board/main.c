@@ -188,6 +188,14 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, int hardwired) {
       resp[0] = is_grey_panda;
       resp_len = 1;
       break;
+    // **** 0xc2: echo number
+    case 0xc2:
+      puts("wValue: ");
+      puth(setup->b.wValue.w);
+      puts("  wIndex: ");
+      puth(setup->b.wIndex.w);
+      puts("\n");
+      break;
     // **** 0xd0: fetch serial number
     case 0xd0:
       #ifdef PANDA
@@ -441,6 +449,16 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, int hardwired) {
         }
         break;
       }
+    // **** 0xf3: CAN termination toggle
+    case 0xf3:
+      if (is_c3) {
+        if (setup->b.wValue.w == 0) {
+          set_gpio_output(GPIOB, 13, setup->b.wIndex.w);
+        } else if (setup->b.wValue.w == 1) {
+          set_gpio_output(GPIOB, 14, setup->b.wIndex.w);
+        }
+      }
+      break;
     default:
       puts("NO HANDLER ");
       puth(setup->b.bRequest);

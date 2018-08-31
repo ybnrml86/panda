@@ -198,7 +198,7 @@ void set_led(int led_num, int on) {
 
 void set_can_mode(int can, int use_gmlan) {
   // connects to CAN2 xcvr or GMLAN xcvr
-  if (use_gmlan) {
+  if (use_gmlan && !is_c3) {
     if (can == 1) {
       // B5,B6: disable normal mode
       set_gpio_mode(GPIOB, 5, MODE_INPUT);
@@ -220,9 +220,11 @@ void set_can_mode(int can, int use_gmlan) {
     }
   } else {
     if (can == 1) {
-      // B12,B13: disable gmlan mode
-      set_gpio_mode(GPIOB, 12, MODE_INPUT);
-      set_gpio_mode(GPIOB, 13, MODE_INPUT);
+      if (!is_c3) {
+        // B12,B13: disable gmlan mode
+        set_gpio_mode(GPIOB, 12, MODE_INPUT);
+        set_gpio_mode(GPIOB, 13, MODE_INPUT);
+      }
 
       // B5,B6: normal mode
       set_gpio_alternate(GPIOB, 5, GPIO_AF9_CAN2);
@@ -440,6 +442,12 @@ void gpio_init() {
 
   if (revision == PANDA_REV_C) {
     set_usb_power_mode(USB_POWER_CLIENT);
+  }
+
+  if (is_c3) {
+    // B13, B14, termination on
+    set_gpio_output(GPIOB, 13, 1);
+    set_gpio_output(GPIOB, 14, 1);
   }
 }
 
