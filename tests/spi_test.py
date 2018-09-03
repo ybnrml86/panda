@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import time
 """
 import spidev
@@ -16,10 +17,11 @@ while 1:
 
 import panda
 
+os.system("sudo chmod 666 /dev/spidev0.0")
 p = panda.Panda("SPI")
 while 1:
-  #print p.get_version()
-  p.serial_write(0, "test")
-  time.sleep(0.01)
+  print p.get_version()
+  #p.serial_write(0, "test")
+  time.sleep(0.1)
 #p.reset()
 

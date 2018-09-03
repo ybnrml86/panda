@@ -105,10 +105,20 @@ class SPIHandle(object):
     import spidev
     self.spi = spidev.SpiDev()
     self.spi.open(0,0)
-    self.spi.max_speed_hz = 5000000
+    self.spi.max_speed_hz = 1000000
+    self.spi.threewire = False
+    self.spi.mode = 0
+    """
+    #self.spi.loop = True
+    print(self.spi.bits_per_word)
+    self.spi.cshigh = False
+    self.spi.lsbfirst = False
+    self.spi.loop = False
+    """
 
   def __recv(self):
-    ret = ''.join(map(chr, self.spi.xfer([0]*0x44)))
+    ret = ''.join(map(chr, self.spi.xfer([0xff]*0x44)))
+    #ret = ''.join(map(chr, self.spi.readbytes(0x44)))
     hexdump(ret)
     length = struct.unpack("I", ret[0:4])[0]
     return ret[4:4+length]
@@ -119,8 +129,12 @@ class SPIHandle(object):
 
   def controlRead(self, request_type, request, value, index, length, timeout=0):
     to_send = struct.pack("HHBBHHH", 0, 0, request_type, request, value, index, length)
-    ret = self.spi.writebytes(map(ord, to_send))
-    #return self.__recv()
+    to_send += "\x00" * (0x14-len(to_send))
+    hexdump(to_send)
+    ret = self.spi.xfer2(map(ord, to_send))
+    hexdump(''.join(map(chr, ret)))
+    time.sleep(0.001)
+    return self.__recv()
 
   def bulkWrite(self, endpoint, data, timeout=0):
     if len(data) > 0x10:
