@@ -158,6 +158,14 @@ int putc(uart_ring *q, char elem) {
   return ret;
 }
 
+void uart_flush(uart_ring *q) {
+  // synchronous call
+  while (q->w_ptr_tx != q->r_ptr_tx) {
+    uart_ring_process(q);
+    //__WFI();
+  }
+}
+
 void clear_uart_buff(uart_ring *q) {
   enter_critical_section();
   q->w_ptr_tx = 0;
