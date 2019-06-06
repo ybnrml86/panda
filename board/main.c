@@ -686,8 +686,6 @@ int main() {
   }*/
   // interrupt on started line
   started_interrupt_init();
-
-  // on car harness, detect first
 #endif
 
 #ifdef DEBUG
@@ -697,6 +695,12 @@ int main() {
   puts("**** INTERRUPTS ON ****\n");
   enable_interrupts();
 
+#ifdef EON
+  // chilling for power to be stable (we have interrupts)
+  set_led(LED_RED, 1);
+  delay(5000000);
+
+  // on car harness, detect first
   for (int tries = 0; tries < 3; tries++) {
     puts("attempting to detect car harness...\n");
     if (uja1023_init(0x61)) {
@@ -706,8 +710,10 @@ int main() {
       car_harness_detected = 1;
       break;
     }
-    delay(100000);
+    delay(500000);
   }
+  set_led(LED_RED, 0);
+#endif
 
   // LED should keep on blinking all the time
   uint64_t cnt = 0;
@@ -717,7 +723,7 @@ int main() {
       int div_mode = ((usb_power_mode == USB_POWER_DCP) ? 4 : 1);
 
       // useful for debugging, fade breaks = panda is overloaded
-      //set_uja1023_output_buffer(0xff);
+      if (car_harness_detected) set_uja1023_output_buffer(0xff);
       for (int div_mode_loop = 0; div_mode_loop < div_mode; div_mode_loop++) {
         for (int fade = 0; fade < 1024; fade += 8) {
           for (int i = 0; i < (128/div_mode); i++) {
@@ -728,7 +734,7 @@ int main() {
           }
         }
       }
-      /*set_uja1023_output_buffer(1);
+      if (car_harness_detected) set_uja1023_output_buffer(0);
       for (int div_mode_loop = 0; div_mode_loop < div_mode; div_mode_loop++) {
         for (int fade = 0; fade < 1024; fade += 8) {
           for (int i = 0; i < (128/div_mode); i++) {
@@ -738,7 +744,7 @@ int main() {
             if (fade < 512) { delay(512-fade); } else { delay(fade-512); }
           }
         }
-      }*/
+      }
     } else {
       __WFI();
     }
