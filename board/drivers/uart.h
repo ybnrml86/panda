@@ -2,11 +2,11 @@
 
 #define FIFO_SIZE 0x400
 typedef struct uart_ring {
-  uint16_t w_ptr_tx;
-  uint16_t r_ptr_tx;
+  volatile uint16_t w_ptr_tx;
+  volatile uint16_t r_ptr_tx;
   uint8_t elems_tx[FIFO_SIZE];
-  uint16_t w_ptr_rx;
-  uint16_t r_ptr_rx;
+  volatile uint16_t w_ptr_rx;
+  volatile uint16_t r_ptr_rx;
   uint8_t elems_rx[FIFO_SIZE];
   USART_TypeDef *uart;
   void (*callback)(struct uart_ring*);
@@ -75,10 +75,9 @@ void uart_ring_process(uart_ring *q) {
     if (sr & USART_SR_TXE) {
       q->uart->DR = q->elems_tx[q->r_ptr_tx];
       q->r_ptr_tx = (q->r_ptr_tx + 1) % FIFO_SIZE;
-    } else {
-      // push on interrupt later
-      q->uart->CR1 |= USART_CR1_TXEIE;
     }
+    // there could be more to send
+    q->uart->CR1 |= USART_CR1_TXEIE;
   } else {
     // nothing to send
     q->uart->CR1 &= ~USART_CR1_TXEIE;
@@ -115,7 +114,7 @@ int getc(uart_ring *q, char *elem) {
 
   enter_critical_section();
   if (q->w_ptr_rx != q->r_ptr_rx) {
-    *elem = q->elems_rx[q->r_ptr_rx];
+    if (elem != NULL) *elem = q->elems_rx[q->r_ptr_rx];
     q->r_ptr_rx = (q->r_ptr_rx + 1) % FIFO_SIZE;
     ret = 1;
   }
@@ -159,11 +158,21 @@ int putc(uart_ring *q, char elem) {
 }
 
 void uart_flush(uart_ring *q) {
-  // synchronous call
+  while (q->w_ptr_tx != q->r_ptr_tx) {
+    __WFI();
+  }
+}
+
+void uart_flush_sync(uart_ring *q) {
+  // empty the TX buffer
   while (q->w_ptr_tx != q->r_ptr_tx) {
     uart_ring_process(q);
-    //__WFI();
   }
+}
+
+void uart_send_break(uart_ring *u) {
+  while (u->uart->CR1 & USART_CR1_SBK);
+  u->uart->CR1 |= USART_CR1_SBK;
 }
 
 void clear_uart_buff(uart_ring *q) {
