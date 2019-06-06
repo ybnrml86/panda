@@ -698,6 +698,7 @@ int main() {
   enable_interrupts();
 
   for (int tries = 0; tries < 3; tries++) {
+    puts("attempting to detect car harness...\n");
     if (uja1023_init(0x61)) {
       puts("detected car harness on try ");
       puth2(tries);
@@ -716,7 +717,7 @@ int main() {
       int div_mode = ((usb_power_mode == USB_POWER_DCP) ? 4 : 1);
 
       // useful for debugging, fade breaks = panda is overloaded
-      set_uja1023_output_buffer(0xff);
+      //set_uja1023_output_buffer(0xff);
       for (int div_mode_loop = 0; div_mode_loop < div_mode; div_mode_loop++) {
         for (int fade = 0; fade < 1024; fade += 8) {
           for (int i = 0; i < (128/div_mode); i++) {
@@ -727,7 +728,7 @@ int main() {
           }
         }
       }
-      set_uja1023_output_buffer(1);
+      /*set_uja1023_output_buffer(1);
       for (int div_mode_loop = 0; div_mode_loop < div_mode; div_mode_loop++) {
         for (int fade = 0; fade < 1024; fade += 8) {
           for (int i = 0; i < (128/div_mode); i++) {
@@ -737,7 +738,7 @@ int main() {
             if (fade < 512) { delay(512-fade); } else { delay(fade-512); }
           }
         }
-      }
+      }*/
     } else {
       __WFI();
     }
