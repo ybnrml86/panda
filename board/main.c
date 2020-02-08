@@ -232,6 +232,10 @@ void usb_cb_ep3_out(void *usbdata, int len, bool hardwired) {
 
     uint8_t bus_number = (to_push.RDTR >> 4) & CAN_BUS_NUM_MASK;
     can_send(&to_push, bus_number, false);
+
+    #ifdef SUBARU_GIRAFFE
+    set_lline_output(1);
+    #endif
   }
 }
 
@@ -300,11 +304,19 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, bool hardwired) 
       break;
     // **** 0xb0: set IR power
     case 0xb0:
-      current_board->set_ir_power(setup->b.wValue.w);
+      if(power_save_status == POWER_SAVE_STATUS_DISABLED){
+        current_board->set_ir_power(setup->b.wValue.w);
+      } else {
+        puts("Setting IR power not allowed in power saving mode\n");
+      }
       break;
     // **** 0xb1: set fan power
     case 0xb1:
-      current_board->set_fan_power(setup->b.wValue.w);
+      if(power_save_status == POWER_SAVE_STATUS_DISABLED){
+        current_board->set_fan_power(setup->b.wValue.w);
+      } else {
+        puts("Setting fan power not allowed in power saving mode\n");
+      }
       break;
     // **** 0xb2: get fan rpm
     case 0xb2:
@@ -724,10 +736,6 @@ void TIM1_BRK_TIM9_IRQ_Handler(void) {
       if (power_save_status != POWER_SAVE_STATUS_ENABLED) {
         set_power_save_state(POWER_SAVE_STATUS_ENABLED);
       }
-
-      // Also disable fan and IR when the heartbeat goes missing
-      current_board->set_fan_power(0U);
-      current_board->set_ir_power(0U);
     }
 
     // enter CDP mode when car starts to ensure we are charging a turned off EON

@@ -121,3 +121,10 @@ int unsafe_mode = 0;
 uint32_t safety_mode_cnt = 0U;
 // allow 1s of transition timeout after relay changes state before assessing malfunctioning
 const uint32_t RELAY_TRNS_TIMEOUT = 1U;
+
+// subaru giraffe relay
+#ifdef SUBARU_GIRAFFE
+void lline_relay_init (void);
+void lline_relay_release (void);
+void set_lline_output(int to_set);
+#endif
