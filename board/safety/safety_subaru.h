@@ -13,7 +13,6 @@ const AddrBus SUBARU_TX_MSGS[] = {{0x122, 0}, {0x221, 0}, {0x322, 0}, {0x139, 2}
 const AddrBus SUBARU_L_TX_MSGS[] = {{0x164, 0}, {0x221, 0}, {0x322, 0}};
 const int SUBARU_TX_MSGS_LEN = sizeof(SUBARU_TX_MSGS) / sizeof(SUBARU_TX_MSGS[0]);
 const int SUBARU_L_TX_MSGS_LEN = sizeof(SUBARU_L_TX_MSGS) / sizeof(SUBARU_L_TX_MSGS[0]);
-=======
 
 AddrCheckStruct subaru_rx_checks[] = {
   {.addr = { 0x40}, .bus = 0, .check_checksum = true, .max_counter = 15U, .expected_timestep = 10000U},
@@ -202,9 +201,8 @@ static int subaru_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
 
   if (!relay_malfunction) {
     if (bus_num == 0) {
-      //  64 is Throttle for Global
       // 313 is Brake_Pedal for Global
-      int block_msg = (addr == 64);
+      int block_msg = (addr == 0x139);
       if (!block_msg) {
         bus_fwd = 2;  // Camera CAN
       }
