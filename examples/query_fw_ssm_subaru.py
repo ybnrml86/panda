@@ -30,8 +30,10 @@ if __name__ == "__main__":
   # 22 F1 97 System String
   # 22 F1 98 some ecu responses
 
+  # 0 - white/grey panda in OBD2, 1 - black panda/comma two + CPv2 in OBD2
   bus = 0
 
+  # 2018 XV/Crosstrek
   ecu_list = (0x735, 0x746, 0x746, 0x753, 0x780, 0x7b0, 0x7c4, 0x7e0, 0x7f1)
   #ecu_list = (0x735, 0x756)
   cmd_list = (b'\x00', b'\x82', b'\x89', b'\x90', b'\x97')
