@@ -286,8 +286,8 @@ void white_grey_common_init(void) {
   // L-line enable
   set_gpio_output(GPIOA, 14, 1);
 
-  // use L-line for relay output on Subaru giraffe
   #ifdef SUBARU_GIRAFFE
+  // use L-line for relay output on Subaru giraffe
   set_gpio_output(GPIOC, 10, 1);
   #else
   // C10, C11: L-Line setup (USART3)
