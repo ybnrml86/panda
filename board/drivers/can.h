@@ -391,10 +391,10 @@ void can_rx(uint8_t can_number) {
     // modify RDTR for our API
     to_push.RDTR = (to_push.RDTR & 0xFFFF000F) | (bus_number << 4);
 
-#ifdef SUBARU_GIRAFFE
+    #ifdef SUBARU_GIRAFFE
     //Relay engaged or relay isn't controlled, allow fwd
     if ((get_lline_status() != 0) || !relay_control) {
-#endif
+    #endif
     // forwarding (panda only)
     int bus_fwd_num = (can_forwarding[bus_number] != -1) ? can_forwarding[bus_number] : safety_fwd_hook(bus_number, &to_push);
     if (bus_fwd_num != -1) {
@@ -405,9 +405,9 @@ void can_rx(uint8_t can_number) {
       to_send.RDHR = to_push.RDHR;
       can_send(&to_send, bus_fwd_num, true);
     }
-#ifdef SUBARU_GIRAFFE
+    #ifdef SUBARU_GIRAFFE
     }
-#endif
+    #endif
 
     can_rx_errs += safety_rx_hook(&to_push) ? 0U : 1U;
     ignition_can_hook(&to_push);
