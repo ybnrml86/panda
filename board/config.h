@@ -7,6 +7,7 @@
 //#define DEBUG_SPI
 //#define DEBUG_FAULTS
 
+// Enable Subaru Giraffe relay control via L-line
 #define SUBARU_GIRAFFE
 
 #ifdef STM32F4

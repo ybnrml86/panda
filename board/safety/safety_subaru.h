@@ -225,9 +225,9 @@ static void subaru_init(int16_t param) {
   controls_allowed = false;
   relay_malfunction_reset();
   subaru_global = true;
-#ifdef SUBARU_GIRAFFE
+  #ifdef SUBARU_GIRAFFE
   lline_relay_init();
-#endif
+  #endif
 }
 
 static void subaru_legacy_init(int16_t param) {
@@ -235,9 +235,9 @@ static void subaru_legacy_init(int16_t param) {
   controls_allowed = false;
   relay_malfunction_reset();
   subaru_global = false;
-#ifdef SUBARU_GIRAFFE
+  #ifdef SUBARU_GIRAFFE
   lline_relay_init();
-#endif
+  #endif
 }
 
 const safety_hooks subaru_hooks = {
