@@ -9,8 +9,8 @@ const int SUBARU_DRIVER_TORQUE_ALLOWANCE = 60;
 const int SUBARU_DRIVER_TORQUE_FACTOR = 10;
 const int SUBARU_STANDSTILL_THRSLD = 20;  // about 1kph
 
-const CanMsg SUBARU_TX_MSGS[] = {{0x122, 0, 8}, {0x221, 0, 8}, {0x322, 0, 8}, {0x220, 0, 8}, {0x222, 0, 8}};
-const CanMsg SUBARU_L_TX_MSGS[] = {{0x164, 0, 8}, {0x221, 0, 8}, {0x322, 0, 8}};
+const CanMsg SUBARU_TX_MSGS[] = {{0x122, 0, 8}, {0x221, 0, 8}, {0x322, 0, 8}, {0x220, 0, 8}, {0x222, 0, 8}, {0x240, 2, 8}};
+const CanMsg SUBARU_L_TX_MSGS[] = {{0x164, 0, 8}};
 const int SUBARU_TX_MSGS_LEN = sizeof(SUBARU_TX_MSGS) / sizeof(SUBARU_TX_MSGS[0]);
 const int SUBARU_L_TX_MSGS_LEN = sizeof(SUBARU_L_TX_MSGS) / sizeof(SUBARU_L_TX_MSGS[0]);
 
@@ -198,23 +198,30 @@ static int subaru_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   int bus_fwd = -1;
 
   if (!relay_malfunction) {
+    int addr = GET_ADDR(to_fwd);
+
     if (bus_num == 0) {
-      bus_fwd = 2;  // Camera CAN
+      // 0x240 is CruiseControl for Global
+      int block_msg = (addr == 0x240 && subaru_global);
+      if (!block_msg) {
+        bus_fwd = 2;  // Camera CAN
+      }
     }
     if (bus_num == 2) {
-      // 0x122 is LKAS for Global Platform
-      // 0x164 is LKAS for outback 2015
-      // 0x220 is ES_Brake
+      // Global Platform:
+      // 0x122 is ES_LKA
       // 0x220 is ES_Brake
       // 0x221 is ES_Distance
       // 0x222 is ES_Status
-      // 0x322 is ES_LKAS
-      int addr = GET_ADDR(to_fwd);
+      // 0x322 is ES_LKAS_State
+      // Pre-global platform:
+      // 0x164 is ES_LKAS
       int block_msg = ((addr == 0x122) && subaru_global) ||
                       ((addr == 0x220) && subaru_global) ||
+                      ((addr == 0x221) && subaru_global) || 
                       ((addr == 0x222) && subaru_global) ||
-                      ((addr == 0x164) && !subaru_global) ||
-                      (addr == 0x221) || (addr == 0x322);
+                      ((addr == 0x322) && subaru_global) ||
+                      ((addr == 0x164) && !subaru_global);
       if (!block_msg) {
         bus_fwd = 0;  // Main CAN
       }
