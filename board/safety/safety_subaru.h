@@ -211,7 +211,7 @@ static int subaru_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
     }
     if (bus_num == 2) {
       // Global Platform:
-      // 0x122 is ES_LKA
+      // 0x122 is ES_LKAS
       // 0x220 is ES_Brake
       // 0x221 is ES_Distance
       // 0x222 is ES_Status
