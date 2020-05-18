@@ -9,10 +9,14 @@ from panda.python.isotp import isotp_send, isotp_recv
 #
 # 22 F1 00 SSM ID
 # 22 F1 82 ROM ID
-# 22 F1 89 Version string
+# 22 F1 89 Version string - only 5 non-essential ecus
 # 22 F1 8E Product code
 # 22 F1 90 VIN - only 7e0
 # 22 F1 97 System String
+#
+# More info:
+# https://drive.google.com/drive/folders/0B7lZHaN-VSRGOVNUR0dlU09mZm8
+# https://docs.google.com/spreadsheets/d/1MdpbjbRO1kU3Tb9v4qB-5gwvsmOcrnBeUEBNTFVBYsM/edit?usp=sharing
 
 # Subaru Crosstrek 2018 ECU list
 #
@@ -33,8 +37,7 @@ from panda.python.isotp import isotp_send, isotp_recv
 # 0x7e1 CVT
 # 0x7f1 Airbag System
 #
-# Note: 0x756 responds in accessory mode only
-# See also: https://drive.google.com/drive/folders/0B7lZHaN-VSRGOVNUR0dlU09mZm8
+# 0x756 responds in accessory mode only
 
 if __name__ == "__main__":
   panda = Panda()

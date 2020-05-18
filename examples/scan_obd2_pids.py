@@ -14,7 +14,9 @@ from panda.python.isotp import isotp_send, isotp_recv
 # 22 F1 90 VIN - only 7e0
 # 22 F1 97 System String
 #
-# 0x756 responds in accessory mode only
+# More info:
+# https://drive.google.com/drive/folders/0B7lZHaN-VSRGOVNUR0dlU09mZm8
+# https://docs.google.com/spreadsheets/d/1MdpbjbRO1kU3Tb9v4qB-5gwvsmOcrnBeUEBNTFVBYsM/edit?usp=sharing
 
 # Subaru Crosstrek 2018 ECU list
 #
@@ -35,8 +37,8 @@ from panda.python.isotp import isotp_send, isotp_recv
 # 0x7e1 CVT
 # 0x7f1 Airbag System
 #
-# Note: 0x756 responds in accessory mode only
-# See also: https://drive.google.com/drive/folders/0B7lZHaN-VSRGOVNUR0dlU09mZm8
+# 0x756 responds in accessory mode only
+
 
 if __name__ == "__main__":
   panda = Panda()
@@ -48,9 +50,6 @@ if __name__ == "__main__":
   # scan only infotainment system ecu at 7d0
   ecu_list = [0x7d0]
 
-  # PID F1 info list
-  #cmd_list = [0x00, 0x82, 0x89, 0x8e, 0x90, 0x97]
-
   pid_list = []
   for i in range(256):
     pid_list.append(i)
@@ -61,6 +60,9 @@ if __name__ == "__main__":
 
   # faster scan with known ranges
   #pid_list = [0x00, 0x01, 0x02, 0x03, 0x10, 0x20, 0x30, 0xa0, 0xf1, 0xff]
+
+  # PID F1 info cmd list
+  #cmd_list = [0x00, 0x82, 0x89, 0x8e, 0x90, 0x97]
 
   for tx_addr in ecu_list:
     for p in pid_list:
