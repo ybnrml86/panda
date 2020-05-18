@@ -5,6 +5,38 @@ from panda import Panda
 from hexdump import hexdump
 from panda.python.isotp import isotp_send, isotp_recv
 
+# OBD Mode 22 PIDs for Subaru
+#
+# 22 F1 00 SSM ID
+# 22 F1 82 ROM ID
+# 22 F1 89 Version string - only 5 non-essential ecus
+# 22 F1 8E Product code
+# 22 F1 90 VIN - only 7e0
+# 22 F1 97 System String
+
+# 0x756 responds in accessory mode only
+
+# Subaru Crosstrek 2018 ECU list
+#
+# TX    System String
+# 0x735 Keyless Entry System
+# 0x746 Power Steering System
+# 0x747 Automatic Headlight Leveling
+# 0x752 Integ. Unit mode
+# 0x753 Tire pressure monitor
+# 0x756 Occupant Detection System *
+# 0x780 Airbag System
+# 0x783 METER
+# 0x787 EyeSight System
+# 0x7b0 VDC/Parking Brake System
+# 0x7c4 Air Condition System
+# 0x7d0 Infotainment System
+# 0x7e0 2.0 DOHC
+# 0x7e1 CVT
+# 0x7f1 Airbag System
+
+# * 0x756 responds in accessory mode only
+
 if __name__ == "__main__":
   panda = Panda()
   panda.set_safety_mode(Panda.SAFETY_ELM327)
@@ -12,22 +44,8 @@ if __name__ == "__main__":
   bus = 1
   panda.can_clear(bus)
 
-  # OBD Mode 22 PIDs for Subaru
-  # 22 F1 00 SSM ID
-  # 22 F1 82 ROM ID
-  # 22 F1 89 Version string - only 5 non-essential ecus
-  # 22 F1 8E Product code
-  # 22 F1 90 VIN - only 7e0
-  # 22 F1 97 System String
-
-  # ECU TX addresses for Crosstrek 2018 discovered by selfdrive/car/fw_versions.py --scan
-  #ecu_list = [0x735, 0x746, 0x747, 0x752, 0x753, 0x780, 0x783, 0x787, 0x7b0, 0x7c4, 0x7d0, 0x7e0, 0x7e1, 0x7f1]
-
-  # 0x756 responds in accessory mode only
-  #ecu_list = [0x756]
-
-  #cmd = b'\x22\x10\x56' # 7d0 volume up
-  cmd = b'\x22\x10\x60'
+  cmd = b'\x22\xf1\x97'  # ECU system string query
+  #cmd = b'\x22\x10\x56' # Infotainment unit (7d0) volume check
 
   # set ecu tx addr
   tx_addr = 0x7d0
@@ -39,6 +57,6 @@ if __name__ == "__main__":
     isotp_send(panda, cmd, tx_addr, bus)
     ret = isotp_recv(panda, rx_addr, bus)
     hexdump(ret)
-    time.sleep(1)
+    time.sleep(0.2)
     panda.send_heartbeat()
-    #break
+    break
