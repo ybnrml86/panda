@@ -71,8 +71,6 @@ int get_honda_hw(void);
 
 void init_tests_chrysler(void);
 
-bool get_subaru_global(void);
-
 void init_tests_nissan(void);
 void set_nissan_desired_angle_last(int t);
 
