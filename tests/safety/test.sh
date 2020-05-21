@@ -14,5 +14,5 @@ set -e
 for hw_type in 0 1 2 3 4 5
 do
   echo "Testing HW_TYPE: $hw_type"
-  HW_TYPE=$hw_type python -m unittest discover .
+  HW_TYPE=$hw_type python -m unittest -v discover .
 done
