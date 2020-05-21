@@ -6,16 +6,14 @@ const uint32_t SUBARU_RT_INTERVAL = 250000;    // 250ms between real time checks
 const int SUBARU_MAX_RATE_UP = 50;
 const int SUBARU_MAX_RATE_DOWN = 70;
 const int SUBARU_DRIVER_TORQUE_ALLOWANCE = 60;
-const int SUBARU_L_DRIVER_TORQUE_ALLOWANCE = 600;
 const int SUBARU_DRIVER_TORQUE_FACTOR = 10;
-const int SUBARU_L_DRIVER_TORQUE_FACTOR = 1;
 const int SUBARU_STANDSTILL_THRSLD = 20;  // about 1kph
 
+const int SUBARU_L_DRIVER_TORQUE_ALLOWANCE = 600;
+const int SUBARU_L_DRIVER_TORQUE_FACTOR = 1;
+
 const CanMsg SUBARU_TX_MSGS[] = {{0x122, 0, 8}, {0x221, 0, 8}, {0x322, 0, 8}};
-const CanMsg SUBARU_L_TX_MSGS[] = {{0x164, 0, 8}};
-//const CanMsg SUBARU_L_TX_MSGS[] = {{0x161, 0, 8}, {0x164, 0, 8}};
 const int SUBARU_TX_MSGS_LEN = sizeof(SUBARU_TX_MSGS) / sizeof(SUBARU_TX_MSGS[0]);
-const int SUBARU_L_TX_MSGS_LEN = sizeof(SUBARU_L_TX_MSGS) / sizeof(SUBARU_L_TX_MSGS[0]);
 
 AddrCheckStruct subaru_rx_checks[] = {
   {.msg = {{ 0x40, 0, 8}}, .check_checksum = true, .max_counter = 15U, .expected_timestep = 10000U},
@@ -24,13 +22,17 @@ AddrCheckStruct subaru_rx_checks[] = {
   {.msg = {{0x13a, 0, 8}}, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U},
   {.msg = {{0x240, 0, 8}}, .check_checksum = true, .max_counter = 15U, .expected_timestep = 50000U},
 };
+const int SUBARU_RX_CHECK_LEN = sizeof(subaru_rx_checks) / sizeof(subaru_rx_checks[0]);
+
+const CanMsg SUBARU_L_TX_MSGS[] = {{0x164, 0, 8}};
+const int SUBARU_L_TX_MSGS_LEN = sizeof(SUBARU_L_TX_MSGS) / sizeof(SUBARU_L_TX_MSGS[0]);
+
 // TODO: do checksum and counter checks after adding the signals to the outback dbc file
 AddrCheckStruct subaru_l_rx_checks[] = {
   {.msg = {{0x140, 0, 8}}, .expected_timestep = 10000U},
   {.msg = {{0x371, 0, 8}}, .expected_timestep = 20000U},
   {.msg = {{0x144, 0, 8}}, .expected_timestep = 50000U},
 };
-const int SUBARU_RX_CHECK_LEN = sizeof(subaru_rx_checks) / sizeof(subaru_rx_checks[0]);
 const int SUBARU_L_RX_CHECK_LEN = sizeof(subaru_l_rx_checks) / sizeof(subaru_l_rx_checks[0]);
 
 static uint8_t subaru_get_checksum(CAN_FIFOMailBox_TypeDef *to_push) {

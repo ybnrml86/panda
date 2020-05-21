@@ -106,6 +106,8 @@ class TestSubaruLegacySafety(common.PandaSafetyTest):
         self.assertTrue(self._tx(self._torque_msg(MAX_STEER * sign)))
 
       self._set_torque_driver(DRIVER_TORQUE_ALLOWANCE + 1, DRIVER_TORQUE_ALLOWANCE + 1)
+      print(DRIVER_TORQUE_ALLOWANCE)
+      print(-MAX_STEER)
       self.assertFalse(self._tx(self._torque_msg(-MAX_STEER)))
 
     # arbitrary high driver torque to ensure max steer torque is allowed
